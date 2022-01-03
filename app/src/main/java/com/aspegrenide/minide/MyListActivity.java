@@ -1,6 +1,8 @@
 package com.aspegrenide.minide;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,6 +13,7 @@ import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.Toast;
 
+import com.aspegrenide.minide.data.Challenge;
 import com.aspegrenide.minide.data.Idea;
 import com.aspegrenide.minide.data.Problem;
 import com.google.firebase.database.DataSnapshot;
@@ -25,211 +28,215 @@ import java.util.List;
 
 public class MyListActivity extends AppCompatActivity {
 
+    public static final String ITEM_UID = "ITEM_UID";
+    // Use FireBase database to handle ideas, problems and needs
     private DatabaseReference fbDatabaseReference;
+    private DatabaseReference challengeCloudEndPoint;
     private DatabaseReference problemCloudEndPoint;
-    private DatabaseReference ideasCloudEndPoint;
-    private DatabaseReference projectsCloudEndPoint;
+    private DatabaseReference ideaCloudEndPoint;
 
-    ArrayList <Problem> problems = new ArrayList<>();
-    ArrayList <Idea> ideas = new ArrayList<>();
+    ArrayList<Challenge> challenges;
+    ArrayList<String> challengesTitles;
+    ArrayList<Problem> problems;
+    ArrayList<String> problemsTitles;
+    ArrayList<Idea> ideas;
+    ArrayList<String> ideasTitles;
 
     private static final String LOG_TAG = "MIN_LISTA";
     // to handle list in the MyList tab
-    ExpandableListView expandableListViewProblems;
-    ExpandableListView expandableListViewIdeas;
-    ExpandableListAdapter expandableListAdapter;
-    List<String> expandableTitleListProblem;
-    List<String> expandableTitleListIdea;
-    HashMap<String, List<String>> expandableDetailListProblems;
-    HashMap<String, List<String>> expandableDetailListIdeas;
+
+    RecyclerView recViewChallenges;
+    RecyclerView recViewProblems;
+    RecyclerView recViewIdeas;
+
+    RecyclerView.LayoutManager recViewLayoutManagerChallenges;
+    RecyclerView.Adapter recViewAdapterChallenges;
+
+    RecyclerView.LayoutManager recViewLayoutManagerProblems;
+    RecyclerView.Adapter recViewAdapterProblems;
+
+    RecyclerView.LayoutManager recViewLayoutManagerIdeas;
+    RecyclerView.Adapter recViewAdapterIdeas;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_list);
 
-        // fetch data
         fbDatabaseReference =  FirebaseDatabase.getInstance("https://minide-1d8d6-default-rtdb.europe-west1.firebasedatabase.app").getReference();
+        challengeCloudEndPoint = fbDatabaseReference.child("challenges");
+        challengeCloudEndPoint.addValueEventListener(challengeListener);
+
         problemCloudEndPoint = fbDatabaseReference.child("problems");
-        ideasCloudEndPoint = fbDatabaseReference.child("ideas");
-        projectsCloudEndPoint = fbDatabaseReference.child("projects");
-        initProblemDataListener(problemCloudEndPoint);
-        initIdeaDataListener(ideasCloudEndPoint);
+        problemCloudEndPoint.addValueEventListener(problemListener);
 
+        ideaCloudEndPoint = fbDatabaseReference.child("ideas");
+        ideaCloudEndPoint.addValueEventListener(ideaListener);
+
+        recViewChallenges = findViewById(R.id.recViewChallenge);
+        recViewProblems = findViewById(R.id.recViewProblem);
+        recViewIdeas = findViewById(R.id.recViewIdea);
+
+        challenges = new ArrayList<>();
+        challengesTitles = new ArrayList<>();
+        problems = new ArrayList<>();
+        problemsTitles = new ArrayList<>();
+        ideas = new ArrayList<>();
+        ideasTitles = new ArrayList<>();
+
+        recViewChallenges.setHasFixedSize(true);
+        recViewProblems.setHasFixedSize(true);
+        recViewIdeas.setHasFixedSize(true);
+
+        recViewLayoutManagerChallenges = new LinearLayoutManager(this);
+        recViewLayoutManagerProblems = new LinearLayoutManager(this);
+        recViewLayoutManagerIdeas = new LinearLayoutManager(this);
+
+        recViewAdapterChallenges = new MainAdapter(challengesTitles);
+        recViewChallenges.setLayoutManager(recViewLayoutManagerChallenges);
+        recViewChallenges.setAdapter(recViewAdapterChallenges);
+
+        recViewAdapterProblems = new MainAdapter(problemsTitles);
+        recViewProblems.setLayoutManager(recViewLayoutManagerProblems);
+        recViewProblems.setAdapter(recViewAdapterProblems);
+
+        recViewProblems.addOnItemTouchListener(new RecyclerTouchListener(getApplicationContext(), recViewProblems, new RecyclerTouchListener.ClickListener() {
+            @Override
+            public void onClick(View view, int position) {
+                String title = problemsTitles.get(position);
+                Log.d(LOG_TAG, "click from main activity with problem: " + title);
+                // open this problem in the tabactivity
+                String uid = problems.get(position).getUid();
+                startProblem(uid);
+            }
+
+            @Override
+            public void onLongClick(View view, int position) {
+                Log.d(LOG_TAG, "long click from main activity");
+
+            }
+        }));
+
+        recViewAdapterIdeas = new MainAdapter(ideasTitles);
+        recViewIdeas.setLayoutManager(recViewLayoutManagerIdeas);
+        recViewIdeas.setAdapter(recViewAdapterIdeas);
+
+        recViewIdeas.addOnItemTouchListener(new RecyclerTouchListener(getApplicationContext(), recViewIdeas, new RecyclerTouchListener.ClickListener() {
+            @Override
+            public void onClick(View view, int position) {
+                String title = ideasTitles.get(position);
+                Log.d(LOG_TAG, "click from main activity with idea: " + title);
+
+                // open this idea in the tabactivity
+                String uid = ideas.get(position).getUid();
+                startIdea(uid);
+            }
+
+            @Override
+            public void onLongClick(View view, int position) {
+                Log.d(LOG_TAG, "long click from main activity");
+
+            }
+        }));
     }
 
-
-
-    private void drawList() {
-        expandableListViewProblems = (ExpandableListView) findViewById(R.id.expandableListViewProblems);
-        expandableListViewIdeas = (ExpandableListView) findViewById(R.id.expandableListViewIdeas);
-        Log.d(LOG_TAG, "exp = " + expandableListViewProblems);
-        Log.d(LOG_TAG, "exp = " + expandableListViewIdeas);
-        expandableDetailListProblems = ExpandableListDataProblems.getData(problems);
-        expandableDetailListIdeas = ExpandableListDataIdeas.getData(ideas);
-
-        expandableTitleListProblem = new ArrayList<String>(expandableDetailListProblems.keySet());
-        expandableTitleListIdea = new ArrayList<String>(expandableDetailListIdeas.keySet());
-
-        expandableListViewProblems.setAdapter(new CustomizedExpandableListAdapter(
-                this, expandableTitleListProblem,
-                expandableDetailListProblems));
-        expandableListViewIdeas.setAdapter(new CustomizedExpandableListAdapter(
-                this, expandableTitleListIdea,
-                expandableDetailListIdeas));
-
-
-        // This method is called when the group is expanded
-        expandableListViewProblems.setOnGroupExpandListener(new ExpandableListView.OnGroupExpandListener() {
-            @Override
-            public void onGroupExpand(int groupPosition) {
-                Toast.makeText(getApplicationContext(), expandableTitleListProblem.get(groupPosition) + " List Expanded.", Toast.LENGTH_SHORT).show();
+    ValueEventListener challengeListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+            // Get Post object and use the values to update the UI
+            Iterable<DataSnapshot> stuff = dataSnapshot.getChildren();
+            challenges.clear();
+            challengesTitles.clear();
+            for (DataSnapshot s : stuff){
+                Challenge c = s.getValue(Challenge.class);
+                Log.d(LOG_TAG, "read c as " + c.toString());
+                challenges.add(c);
+                challengesTitles.add(c.getTitle());
             }
-        });
+            recViewAdapterChallenges.notifyDataSetChanged();
+        }
 
-        // This method is called when the group is collapsed
-        expandableListViewProblems.setOnGroupCollapseListener(new ExpandableListView.OnGroupCollapseListener() {
-            @Override
-            public void onGroupCollapse(int groupPosition) {
-                Toast.makeText(getApplicationContext(), expandableTitleListProblem.get(groupPosition) + " List Collapsed.", Toast.LENGTH_SHORT).show();
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+            // Getting Post failed, log a message
+            Log.w(LOG_TAG, "loadPost:onCancelled", databaseError.toException());
+        }
+    };
+
+
+    ValueEventListener problemListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+            // Get Post object and use the values to update the UI
+            Iterable<DataSnapshot> stuff = dataSnapshot.getChildren();
+            problems.clear();
+            problemsTitles.clear();
+            for (DataSnapshot s : stuff){
+                Problem p = s.getValue(Problem.class);
+                Log.d(LOG_TAG, "read p as " + p.toString());
+                problems.add(p);
+                problemsTitles.add(p.getTitle());
             }
-        });
+            recViewAdapterProblems.notifyDataSetChanged();
+        }
 
-        // This method is called when the child in any group is clicked
-        // via a toast method, it is shown to display the selected child item as a sample
-        // we may need to add further steps according to the requirements
-        expandableListViewProblems.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
-            @Override
-            public boolean onChildClick(ExpandableListView parent, View v,
-                                        int groupPosition, int childPosition, long id) {
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+            // Getting Post failed, log a message
+            Log.w(LOG_TAG, "loadPost:onCancelled", databaseError.toException());
+        }
+    };
 
-                String itemStr = expandableDetailListProblems.get(
-                        expandableTitleListProblem.get(groupPosition)).get(
-                        childPosition);
-                String itemHeader = expandableTitleListProblem.get(groupPosition);
-
-                if(itemStr.contains("Klicka mig för att uppdatera")) {
-                    openProblemItem(expandableTitleListProblem.get(groupPosition));
-                }
-
-                return false;
+    ValueEventListener ideaListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+            // Get Post object and use the values to update the UI
+            Iterable<DataSnapshot> stuff = dataSnapshot.getChildren();
+            ideas.clear();
+            ideasTitles.clear();
+            for (DataSnapshot s : stuff){
+                Idea i = s.getValue(Idea.class);
+                Log.d(LOG_TAG, "read i as " + i.toString());
+                ideas.add(i);
+                ideasTitles.add(i.getTitle());
             }
-        });
+            recViewAdapterIdeas.notifyDataSetChanged();
+        }
 
-        expandableListViewIdeas.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
-            @Override
-            public boolean onChildClick(ExpandableListView parent, View v,
-                                        int groupPosition, int childPosition, long id) {
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+            // Getting Post failed, log a message
+            Log.w(LOG_TAG, "loadPost:onCancelled", databaseError.toException());
+        }
+    };
 
-                String itemStr = expandableDetailListIdeas.get(
-                        expandableTitleListIdea.get(groupPosition)).get(
-                        childPosition);
-                String itemHeader = expandableTitleListIdea.get(groupPosition);
-
-                if(itemStr.contains("Klicka mig för att uppdatera")) {
-                    openIdeaItem(expandableTitleListIdea.get(groupPosition));
-                }
-
-                return false;
-            }
-        });
-
-        expandableListViewProblems.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(getApplicationContext(), "loong click", Toast.LENGTH_SHORT).show();
-                return false;
-            }
-        });
-    }
-
-
-
-    public void initIdeaDataListener(DatabaseReference ref) {
-        Log.d(LOG_TAG, "readRoundsData ");
-
-        ref.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                // This method is called once with the initial value and again
-                // whenever data at this location is updated.
-                Iterable<DataSnapshot> stuff = dataSnapshot.getChildren();
-                for(DataSnapshot s : stuff){
-                    Log.d(LOG_TAG, "Stuff is: " + s.toString());
-                    Idea idea = s.getValue(Idea.class);
-                    Log.d(LOG_TAG, "Idea is: " + idea.toString());
-                    ideas.add(idea);
-                }
-                if(ideas.isEmpty()){
-                    Log.d(LOG_TAG, "No Ideas available: " );
-                }else{
-                    Log.d(LOG_TAG, "Ideas available: " );
-                    drawList();
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Failed to read value
-                Log.w(LOG_TAG, "Failed to read value.", error.toException());
-            }
-        });
-    }
-    public void initProblemDataListener(DatabaseReference ref) {
-        Log.d(LOG_TAG, "readRoundsData ");
-
-        ref.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                // This method is called once with the initial value and again
-                // whenever data at this location is updated.
-                Iterable<DataSnapshot> stuff = dataSnapshot.getChildren();
-                for(DataSnapshot s : stuff){
-                    Log.d(LOG_TAG, "Stuff is: " + s.toString());
-                    Problem problem = s.getValue(Problem.class);
-                    Log.d(LOG_TAG, "Problem is: " + problem.toString());
-                    problems.add(problem);
-                }
-                if(problems.isEmpty()){
-                    Log.d(LOG_TAG, "No problems available: " );
-                }else{
-                    Log.d(LOG_TAG, "Problems available: " );
-                    drawList();
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Failed to read value
-                Log.w(LOG_TAG, "Failed to read value.", error.toException());
-            }
-        });
+    public void onClickButtonNewChallenge(View view) {
     }
 
     public void onClickButtonNewProblem(View view) {
+        startProblem(null);
+    }
+
+    public void startProblem(String uid) {
         Intent i = new Intent(this, MainActivityProblem.class);
+        if(uid != null) {
+            Log.d(LOG_TAG, "send intent with uid as "+ ITEM_UID);
+            i.putExtra(ITEM_UID, uid);
+        }
         startActivity(i);
     }
 
     public void onClickButtonNewIdea(View view) {
+        startIdea(null);
+    }
+
+    public void startIdea(String uid) {
         Intent i = new Intent(this, MainActivityIdea.class);
+        if(uid != null) {
+            Log.d(LOG_TAG, "send intent with uid as "+ ITEM_UID);
+            i.putExtra(ITEM_UID, uid);
+        }
         startActivity(i);
     }
 
-    private void openProblemItem(String s) {
-        Intent i = new Intent(this, MainActivityProblem.class);
-        i.putExtra(MainActivityProblem.ITEM_TITLE, s);
-        startActivity(i);
-    }
-
-    private void openIdeaItem(String s) {
-        Intent i = new Intent(this, MainActivityIdea.class);
-        i.putExtra(MainActivityIdea.ITEM_TITLE, s);
-        startActivity(i);
-    }
-
-    public void onClickButtonNewProject(View view) {
-        Intent i = new Intent(this, MainActivityIdea.class);
-        startActivity(i);
-    }
 }

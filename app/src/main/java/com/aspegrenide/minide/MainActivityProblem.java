@@ -1,7 +1,10 @@
 package com.aspegrenide.minide;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.content.Intent;
@@ -13,6 +16,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.aspegrenide.minide.data.Idea;
 import com.aspegrenide.minide.data.Problem;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.database.DataSnapshot;
@@ -25,22 +29,35 @@ import java.util.ArrayList;
 
 public class MainActivityProblem extends AppCompatActivity {
 
-    public static final String ITEM_TITLE = "ITEM_TITLE";
     TabLayout tabLayout;
     ViewPager2 viewPager2;
-    FragmentAdapter fragmentAdapter;
+    FragmentAdapterProblem fragmentAdapterProblem;
+
+    EditText etTitle;
 
     // Use FireBase database to handle ideas, problems and needs
     private DatabaseReference fbDatabaseReference;
     private DatabaseReference problemCloudEndPoint;
-    private DatabaseReference ideasCloudEndPoint;
-    private DatabaseReference projectCloudEndPoint;
 
     private ArrayList<Problem> problems;
     private Problem currentProblem;
-    private String problemTitle;
+    private String problemUid;
 
     private String LOG_TAG = "min_ide";
+
+    // show linked ideas
+    RecyclerView recViewIdeas;
+    RecyclerView recViewLinkedIdeas;
+    RecyclerView.LayoutManager recViewLayoutManagerIdeas;
+    RecyclerView.LayoutManager recViewLayoutManagerLinkedIdeas;
+    RecyclerView.Adapter recViewAdapterIdeas;
+    RecyclerView.Adapter recViewAdapterLinkedIdeas;
+
+    ArrayList<Idea> ideas;
+    ArrayList<Idea> ideasLinked;
+    ArrayList<String> ideasTitles;
+    ArrayList<String> ideasLinkedTitles;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +65,24 @@ public class MainActivityProblem extends AppCompatActivity {
         setContentView(R.layout.activity_main_problem);
         TextView tabIntro = findViewById(R.id.tvTabIntro);
         tabIntro.setText("Beskriv problemet");
+
+        etTitle = findViewById(R.id.textBoxTitle);
+
+
+        if (savedInstanceState == null) {
+            Bundle extras = getIntent().getExtras();
+            if(extras == null) {
+                Log.d(LOG_TAG, "receive intent with NO uid as "+ MyListActivity.ITEM_UID);
+                problemUid = null; // we are here to create a new problem
+            } else {
+                problemUid = extras.getString(MyListActivity.ITEM_UID);
+                Log.d(LOG_TAG, "receive intent with uid as "+ MyListActivity.ITEM_UID + " " + problemUid);
+            }
+        } else {
+            problemUid = (String) savedInstanceState.getSerializable(MyListActivity.ITEM_UID);
+            Log.d(LOG_TAG, "receive intent (2) with uid as "+ MyListActivity.ITEM_UID);
+        }
+        Log.d(LOG_TAG, "uid received as = " + problemUid);
 
         currentProblem = new Problem();
         problems = new ArrayList<>();
@@ -60,25 +95,14 @@ public class MainActivityProblem extends AppCompatActivity {
         viewPager2 = findViewById(R.id.view_pager2);
 
         FragmentManager fm = getSupportFragmentManager();
-        fragmentAdapter = new FragmentAdapter(fm, getLifecycle());
-        viewPager2.setAdapter(fragmentAdapter);
+        fragmentAdapterProblem = new FragmentAdapterProblem(fm, getLifecycle());
+        viewPager2.setAdapter(fragmentAdapterProblem);
 
         tabLayout.addTab(tabLayout.newTab().setText("Beskrivning"));
         tabLayout.addTab(tabLayout.newTab().setText("Bild"));
         tabLayout.addTab(tabLayout.newTab().setText("Detaljer"));
         //tabLayout.addTab(tabLayout.newTab().setText("Min lista"));
 
-        if (savedInstanceState == null) {
-            Bundle extras = getIntent().getExtras();
-            if(extras == null) {
-                problemTitle = null;
-            } else {
-                problemTitle = extras.getString(ITEM_TITLE);
-            }
-        } else {
-            problemTitle = (String) savedInstanceState.getSerializable(ITEM_TITLE);
-        }
-        Log.d(LOG_TAG, "title send as = " + problemTitle);
 
 
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -88,14 +112,14 @@ public class MainActivityProblem extends AppCompatActivity {
                 Log.d(LOG_TAG, "onTabSelected");
                 if(tab.getPosition() == 0) {
                     tabIntro.setText("Beskriv problemet");
-                    fillInTheBoxesDescription();
+                    // we can not access views from the fragment here
+                    // they have not been created, so hold on :-)
                 }
                 if(tab.getPosition() == 1) {
                     tabIntro.setText("Ta en bild eller hämta från albumet");
                 }
                 if(tab.getPosition() == 2) {
-                    tabIntro.setText("Välj hur du vill gå vidare");
-                    fillInTheBoxesDetails();
+                    tabIntro.setText("Lite om hur problemet hänger ihop");
                 }
                 if(tab.getPosition() == 3) {
                     tabIntro.setText("Min lista");
@@ -122,9 +146,13 @@ public class MainActivityProblem extends AppCompatActivity {
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
                 tabLayout.selectTab(tabLayout.getTabAt(position));
+                // now everything has loaded and we can access the views of the fragment
+                fillInTheBoxesDescription();
+                fillInTheBoxesDetails();
             }
         });
     }
+
 
     private void fillInTheBoxesDetails() {
         if (currentProblem == null) {
@@ -137,22 +165,107 @@ public class MainActivityProblem extends AppCompatActivity {
 
         Switch openItem = findViewById(R.id.switchOpen);
         openItem.setChecked(currentProblem.isOpen());
+
+        fbDatabaseReference =  FirebaseDatabase.getInstance("https://minide-1d8d6-default-rtdb.europe-west1.firebasedatabase.app").getReference();
+        DatabaseReference ideaCloudEndPoint = fbDatabaseReference.child("ideas");
+        ideaCloudEndPoint.addValueEventListener(ideaListener);
+
+        ideas = new ArrayList<>();
+        ideasLinked = new ArrayList<>();
+        ideasTitles = new ArrayList<>();
+        ideasLinkedTitles = new ArrayList<>();
+
+
+        recViewIdeas = findViewById(R.id.recViewAllIdeas);
+        recViewLinkedIdeas = findViewById(R.id.recViewLinkedIdeas);
+        recViewLayoutManagerIdeas = new LinearLayoutManager(this);
+        recViewLayoutManagerLinkedIdeas = new LinearLayoutManager(this);
+
+        recViewAdapterIdeas = new MainAdapter(ideasTitles);
+        recViewAdapterLinkedIdeas = new MainAdapter(ideasLinkedTitles);
+
+        recViewIdeas.setLayoutManager(recViewLayoutManagerIdeas);
+        recViewIdeas.setAdapter(recViewAdapterIdeas);
+
+        recViewLinkedIdeas.setLayoutManager(recViewLayoutManagerLinkedIdeas);
+        recViewLinkedIdeas.setAdapter(recViewAdapterLinkedIdeas);
+
+        recViewIdeas.addOnItemTouchListener(new RecyclerTouchListener(getApplicationContext(), recViewIdeas, new RecyclerTouchListener.ClickListener() {
+            @Override
+            public void onClick(View view, int position) {
+                String title = ideasTitles.get(position);
+                Log.d(LOG_TAG, "click from main activity with idea: " + title);
+                // move item from all to linked
+                updateLinkedLists(position);
+
+            }
+
+            @Override
+            public void onLongClick(View view, int position) {
+                Log.d(LOG_TAG, "long click from main activity");
+            }
+        }));
     }
+
+    private void updateLinkedLists(int position) {
+        // update the main lists
+        Idea temp = ideas.get(position);
+        ideas.remove(position);
+        ideasLinked.add(temp);
+
+        // also update the titles that go into the recyclerviews
+        String t = ideasTitles.get(position);
+        ideasTitles.remove(position);
+        ideasLinkedTitles.add(t);
+
+        recViewAdapterIdeas.notifyDataSetChanged();
+        recViewAdapterLinkedIdeas.notifyDataSetChanged();
+
+    }
+
+    ValueEventListener ideaListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+            // Get Post object and use the values to update the UI
+            Iterable<DataSnapshot> stuff = dataSnapshot.getChildren();
+            ideas.clear();
+            ideasTitles.clear();
+            for (DataSnapshot s : stuff) {
+                Idea i = s.getValue(Idea.class);
+                Log.d(LOG_TAG, "read i as " + i.toString());
+                // now check which ones are already selected
+                if(currentProblem.getLinkedIdeas().contains(i.getUid())) {
+                    // already listed
+                    ideasLinked.add(i);
+                    ideasLinkedTitles.add(i.getTitle());
+                } else {
+                    ideas.add(i);
+                    ideasTitles.add(i.getTitle());
+                }
+            }
+            recViewAdapterIdeas.notifyDataSetChanged();
+            recViewAdapterLinkedIdeas.notifyDataSetChanged();
+        }
+
+        @Override
+        public void onCancelled(@NonNull DatabaseError error) {
+
+        }
+    };
 
 
     private void fillInTheBoxesDescription() {
         if (currentProblem == null) {
             return;
         }
+        etTitle.setText(currentProblem.getTitle());
 
-        EditText etTitle = findViewById(R.id.textBoxTitle);
         EditText etWhat = findViewById(R.id.textBoxApproach);
         EditText etWhen = findViewById(R.id.textboxBenefit);
         EditText etWhere = findViewById(R.id.textboxVar);
         EditText etWho = findViewById(R.id.textboxCompetition);
 
-        if(etWhat == null) { return; }
-        etTitle.setText(currentProblem.getTitle());
+        if(etWhat == null) { return;}
         etWhat.setText(currentProblem.getWhat());
         etWhen.setText(currentProblem.getWhen());
         etWhere.setText(currentProblem.getWhere());
@@ -172,7 +285,7 @@ public class MainActivityProblem extends AppCompatActivity {
                 Problem p = s.getValue(Problem.class);
                 Log.d(LOG_TAG, "read p as " + p.toString());
                 problems.add(p);
-                if(p.getTitle().equals(problemTitle)) {
+                if(p.getUid().equals(problemUid)) {
                     currentProblem = p;
                     Log.d(LOG_TAG, "currentproblem found " + p.getTitle());
                 }
@@ -190,19 +303,13 @@ public class MainActivityProblem extends AppCompatActivity {
     };
 
 
-    public void onClickButtonUpdate(View view) {
-        writeToCloud();
-    }
 
     private void writeToCloud() {
 
-        // title must always be filled in and should always be available
-        EditText etTitle = findViewById(R.id.textBoxTitle);
-        if (etTitle == null) {
-            Toast.makeText(this, "Title is missing, please enter", Toast.LENGTH_SHORT).show();
+        if(problemUid == null) {
+            Toast.makeText(this, "Du måste skapa ett problem först", Toast.LENGTH_SHORT).show();
             return;
         }
-        currentProblem.setTitle(etTitle.getText().toString());
 
         // description tab
         EditText etWhat = findViewById(R.id.textBoxApproach);
@@ -211,37 +318,51 @@ public class MainActivityProblem extends AppCompatActivity {
         EditText etWho = findViewById(R.id.textboxCompetition);
 
         if (etWhat != null) {
-            problemCloudEndPoint.child(currentProblem.getTitle()).child("what").
+            problemCloudEndPoint.child(problemUid).child("what").
                     setValue(etWhat.getText().toString());
         }
         if (etWhere != null) {
-            problemCloudEndPoint.child(currentProblem.getTitle()).child("where").
+            problemCloudEndPoint.child(problemUid).child("where").
                     setValue(etWhere.getText().toString());
         }
 
         if (etWho != null) {
-            problemCloudEndPoint.child(currentProblem.getTitle()).child("who").
+            problemCloudEndPoint.child(problemUid).child("who").
                     setValue(etWho.getText().toString());
         }
         if (etWhen != null) {
-            problemCloudEndPoint.child(currentProblem.getTitle()).child("when").
+            problemCloudEndPoint.child(problemUid).child("when").
                     setValue(etWhen.getText().toString());
         }
 
         // details tab
         EditText etContact = findViewById(R.id.textBoxKontakt);
         if(etContact != null) {
-            problemCloudEndPoint.child(currentProblem.getTitle()).child("contact").
+            problemCloudEndPoint.child(problemUid).child("contact").
                     setValue(etContact.getText().toString());
         }
         Switch swtOpen = findViewById(R.id.switchOpen);
         if(swtOpen != null) {
-            problemCloudEndPoint.child(currentProblem.getTitle()).child("open").
+            problemCloudEndPoint.child(problemUid).child("open").
                     setValue(swtOpen.isChecked());
+        }
+        //linked ideas
+        RecyclerView rc = findViewById(R.id.recViewLinkedIdeas);
+        if(rc != null) {
+            ArrayList<String> linkedUids = new ArrayList<>();
+            for (Idea i : ideasLinked) {
+                linkedUids.add(i.getUid());
+            }
+            problemCloudEndPoint.child(problemUid).child("linkedIdeas").
+                    setValue(linkedUids);
         }
 
         Toast.makeText(this, "Updated", Toast.LENGTH_SHORT).show();
 
+    }
+
+    public void onClickButtonUpdate(View view) {
+        writeToCloud();
     }
 
     public void onClickButtonMyList(View view) {
@@ -249,4 +370,33 @@ public class MainActivityProblem extends AppCompatActivity {
         startActivity(i);
     }
 
+    public void onClickButtonSkapaProblem(View view) {
+        // create a new problem
+
+        EditText etTitle = findViewById(R.id.textBoxTitle);
+        String proposedTitle = etTitle.getText().toString().trim();
+
+        if (proposedTitle.equals("")) {
+            Toast.makeText(this, "Ange en kort titel på ditt problem för att skapa det", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+
+        // check if the title is taken
+        for (Problem p : problems) {
+            if(p.getTitle().equals(proposedTitle)) {
+                Toast.makeText(this, "Problemet finns redan registrerat", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
+
+        problemUid = problemCloudEndPoint.push().getKey();
+        currentProblem = new Problem();
+        currentProblem.setUid(problemUid);
+        currentProblem.setTitle(proposedTitle);
+
+        problemCloudEndPoint.child(problemUid).setValue(currentProblem);
+
+        Log.d(LOG_TAG, "uid created as : " + problemUid);
+    }
 }

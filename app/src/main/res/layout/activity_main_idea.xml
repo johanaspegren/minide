@@ -53,8 +53,8 @@
         android:layout_alignBottom="@id/textBoxTitle"
         android:layout_marginLeft="32dp"
         android:layout_toRightOf="@id/textBoxTitle"
-        android:visibility="invisible"
-        android:text="Nytt" />
+        android:onClick="onClickButtonSkapaIde"
+        android:text="Skapa" />
 
     <Button
         android:id="@+id/buttonSearch"
@@ -80,6 +80,7 @@
         android:layout_below="@id/view_pager2"
         android:layout_toLeftOf="@id/buttonMyList"
         android:onClick="onClickButtonUpdate"
+        android:enabled="true"
         android:text="Spara" />
 
     <Button

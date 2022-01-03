@@ -7,6 +7,7 @@ public class Idea {
     private String benefit;
     private String contact;
     private String competition;
+    private String uid;
     private boolean open;
 
     public Idea() {
@@ -20,6 +21,7 @@ public class Idea {
                 ", benefit='" + benefit + '\'' +
                 ", contact='" + contact + '\'' +
                 ", competition='" + competition + '\'' +
+                ", uid='" + uid + '\'' +
                 ", open=" + open +
                 '}';
     }
@@ -62,6 +64,14 @@ public class Idea {
 
     public void setCompetition(String competition) {
         this.competition = competition;
+    }
+
+    public String getUid() {
+        return uid;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
     }
 
     public boolean isOpen() {

@@ -53,8 +53,8 @@
         android:layout_alignBottom="@id/textBoxTitle"
         android:layout_marginLeft="32dp"
         android:layout_toRightOf="@id/textBoxTitle"
-        android:visibility="invisible"
-        android:text="Nytt" />
+        android:onClick="onClickButtonSkapaProblem"
+        android:text="Skapa nytt" />
 
     <Button
         android:id="@+id/buttonSearch"

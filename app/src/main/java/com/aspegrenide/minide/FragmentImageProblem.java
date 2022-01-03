@@ -4,23 +4,16 @@ import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import org.w3c.dom.Text;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link FragmentDescription#newInstance} factory method to
+ * Use the {@link FragmentImageProblem#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class FragmentDescription extends Fragment {
+public class FragmentImageProblem extends Fragment {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -31,7 +24,7 @@ public class FragmentDescription extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    public FragmentDescription() {
+    public FragmentImageProblem() {
         // Required empty public constructor
     }
 
@@ -41,11 +34,11 @@ public class FragmentDescription extends Fragment {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment FragmentDescription.
+     * @return A new instance of fragment FragmentImage.
      */
     // TODO: Rename and change types and number of parameters
-    public static FragmentDescription newInstance(String param1, String param2) {
-        FragmentDescription fragment = new FragmentDescription();
+    public static FragmentImageProblem newInstance(String param1, String param2) {
+        FragmentImageProblem fragment = new FragmentImageProblem();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -66,7 +59,6 @@ public class FragmentDescription extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_description, container, false);
+        return inflater.inflate(R.layout.fragment_image, container, false);
     }
-
 }

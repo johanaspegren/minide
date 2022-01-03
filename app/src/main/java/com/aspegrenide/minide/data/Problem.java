@@ -1,14 +1,18 @@
 package com.aspegrenide.minide.data;
 
+import java.util.ArrayList;
+
 public class Problem {
 
     private String title;
+    private String uid;
     private String what;
     private String who;
     private String when;
     private String where;
     private String contact;
     private boolean open;
+    private ArrayList<String> linkedIdeas;
 
     public Problem() {
     }
@@ -17,10 +21,14 @@ public class Problem {
     public String toString() {
         return "Problem{" +
                 "title='" + title + '\'' +
+                ", uid='" + uid + '\'' +
                 ", what='" + what + '\'' +
                 ", who='" + who + '\'' +
                 ", when='" + when + '\'' +
                 ", where='" + where + '\'' +
+                ", contact='" + contact + '\'' +
+                ", open=" + open +
+                ", linkedIdeas=" + linkedIdeas +
                 '}';
     }
 
@@ -30,6 +38,14 @@ public class Problem {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getUid() {
+        return uid;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
     }
 
     public String getWhat() {
@@ -78,5 +94,13 @@ public class Problem {
 
     public void setOpen(boolean open) {
         this.open = open;
+    }
+
+    public ArrayList<String> getLinkedIdeas() {
+        return linkedIdeas;
+    }
+
+    public void setLinkedIdeas(ArrayList<String> linkedIdeas) {
+        this.linkedIdeas = linkedIdeas;
     }
 }

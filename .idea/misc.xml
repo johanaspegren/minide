@@ -4,10 +4,12 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/Users/johan/OneDrive/Documents/AndroidStudioProjects/minide/app/src/main/res/layout/activity_main.xml" value="0.16" />
-        <entry key="..\:/Users/johan/OneDrive/Documents/AndroidStudioProjects/minide/app/src/main/res/layout/activity_main_idea.xml" value="0.10595703125" />
+        <entry key="..\:/Users/johan/OneDrive/Documents/AndroidStudioProjects/minide/app/src/main/res/layout/activity_main_idea.xml" value="0.16" />
         <entry key="..\:/Users/johan/OneDrive/Documents/AndroidStudioProjects/minide/app/src/main/res/layout/activity_main_old'.xml" value="0.1" />
         <entry key="..\:/Users/johan/OneDrive/Documents/AndroidStudioProjects/minide/app/src/main/res/layout/activity_main_org.xml" value="0.1" />
+        <entry key="..\:/Users/johan/OneDrive/Documents/AndroidStudioProjects/minide/app/src/main/res/layout/activity_main_problem.xml" value="0.1025390625" />
         <entry key="..\:/Users/johan/OneDrive/Documents/AndroidStudioProjects/minide/app/src/main/res/layout/activity_my_list.xml" value="0.128" />
+        <entry key="..\:/Users/johan/OneDrive/Documents/AndroidStudioProjects/minide/app/src/main/res/layout/activity_my_list_old.xml" value="0.11376953125" />
         <entry key="..\:/Users/johan/OneDrive/Documents/AndroidStudioProjects/minide/app/src/main/res/layout/activity_picture.xml" value="0.10466222645099905" />
         <entry key="..\:/Users/johan/OneDrive/Documents/AndroidStudioProjects/minide/app/src/main/res/layout/fragment_description.xml" value="0.2" />
         <entry key="..\:/Users/johan/OneDrive/Documents/AndroidStudioProjects/minide/app/src/main/res/layout/fragment_description_idea.xml" value="0.10595703125" />
