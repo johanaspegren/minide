@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/Users/johan/OneDrive/Documents/AndroidStudioProjects/minide/app/src/main/res/layout/activity_main.xml" value="0.16" />
+        <entry key="..\:/Users/johan/OneDrive/Documents/AndroidStudioProjects/minide/app/src/main/res/layout/activity_main_idea.xml" value="0.10595703125" />
+        <entry key="..\:/Users/johan/OneDrive/Documents/AndroidStudioProjects/minide/app/src/main/res/layout/activity_main_old'.xml" value="0.1" />
+        <entry key="..\:/Users/johan/OneDrive/Documents/AndroidStudioProjects/minide/app/src/main/res/layout/activity_main_org.xml" value="0.1" />
+        <entry key="..\:/Users/johan/OneDrive/Documents/AndroidStudioProjects/minide/app/src/main/res/layout/activity_my_list.xml" value="0.128" />
+        <entry key="..\:/Users/johan/OneDrive/Documents/AndroidStudioProjects/minide/app/src/main/res/layout/activity_picture.xml" value="0.10466222645099905" />
+        <entry key="..\:/Users/johan/OneDrive/Documents/AndroidStudioProjects/minide/app/src/main/res/layout/fragment_description.xml" value="0.2" />
+        <entry key="..\:/Users/johan/OneDrive/Documents/AndroidStudioProjects/minide/app/src/main/res/layout/fragment_description_idea.xml" value="0.10595703125" />
+        <entry key="..\:/Users/johan/OneDrive/Documents/AndroidStudioProjects/minide/app/src/main/res/layout/fragment_details.xml" value="0.264" />
+        <entry key="..\:/Users/johan/OneDrive/Documents/AndroidStudioProjects/minide/app/src/main/res/layout/fragment_details_idea.xml" value="0.2" />
+        <entry key="..\:/Users/johan/OneDrive/Documents/AndroidStudioProjects/minide/app/src/main/res/layout/fragment_image.xml" value="0.1" />
+        <entry key="..\:/Users/johan/OneDrive/Documents/AndroidStudioProjects/minide/app/src/main/res/layout/fragment_image_idea.xml" value="0.11730769230769231" />
+        <entry key="..\:/Users/johan/OneDrive/Documents/AndroidStudioProjects/minide/app/src/main/res/layout/fragment_my_ideas.xml" value="0.1" />
+        <entry key="..\:/Users/johan/OneDrive/Documents/AndroidStudioProjects/minide/app/src/main/res/layout/fragment_my_list.xml" value="0.1" />
+        <entry key="..\:/Users/johan/OneDrive/Documents/AndroidStudioProjects/minide/app/src/main/res/layout/list_group.xml" value="0.1" />
+        <entry key="..\:/Users/johan/OneDrive/Documents/AndroidStudioProjects/minide/app/src/main/res/layout/list_item.xml" value="0.1" />
+      </map>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/build/classes" />
+  </component>
+  <component name="ProjectType">
+    <option name="id" value="Android" />
+  </component>
+</project>

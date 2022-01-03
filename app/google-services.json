@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "435539535366",
+    "firebase_url": "https://minide-1d8d6-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "minide-1d8d6",
+    "storage_bucket": "minide-1d8d6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:435539535366:android:86822d634c7aca8bb08587",
+        "android_client_info": {
+          "package_name": "com.aspegrenide.minide"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "435539535366-82drrt3o6lqbl855rki63s2dt8hro6ud.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAttUP_75T5jJ7zCq8w0AfrbIdlOnrrslc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "435539535366-82drrt3o6lqbl855rki63s2dt8hro6ud.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

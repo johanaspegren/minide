@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".FragmentDescription">
+
+    <!-- TODO: Update blank fragment layout -->
+
+
+    <TextView
+        android:id="@+id/tvApproach"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="64dp"
+        android:text="Vad är problemet?"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/textBoxApproach"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/textbox_width"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="32dp"
+        android:background="@color/textbox_color"
+        android:ems="10"
+        android:gravity="start|top"
+        android:inputType="textMultiLine"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvApproach"
+        tools:ignore="SpeakableTextPresentCheck" />
+
+    <TextView
+        android:id="@+id/tvBenefit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="När uppstår problemet?"
+        app:layout_constraintStart_toStartOf="@+id/tvApproach"
+        app:layout_constraintTop_toBottomOf="@+id/textboxCompetition" />
+
+    <EditText
+        android:id="@+id/textboxBenefit"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/textbox_width"
+        android:layout_marginTop="8dp"
+        android:background="@color/textbox_color"
+        android:ems="10"
+        android:gravity="start|top"
+        android:inputType="textMultiLine"
+        app:layout_constraintEnd_toEndOf="@+id/textBoxApproach"
+        app:layout_constraintStart_toStartOf="@+id/textBoxApproach"
+        app:layout_constraintTop_toBottomOf="@+id/tvBenefit"
+        tools:ignore="SpeakableTextPresentCheck" />
+
+    <TextView
+        android:id="@+id/tvCompetition"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="32dp"
+        android:text="För vem är det ett problem?"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textBoxApproach" />
+
+    <EditText
+        android:id="@+id/textboxCompetition"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/textbox_width"
+        android:layout_marginTop="8dp"
+        android:background="@color/textbox_color"
+        android:ems="10"
+        android:gravity="start|top"
+        android:inputType="textMultiLine"
+        app:layout_constraintEnd_toEndOf="@+id/textboxBenefit"
+        app:layout_constraintStart_toStartOf="@+id/textboxBenefit"
+        app:layout_constraintTop_toBottomOf="@+id/tvCompetition"
+        tools:ignore="SpeakableTextPresentCheck" />
+
+    <TextView
+        android:id="@+id/tvVar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="Var sker problemet?"
+        app:layout_constraintStart_toStartOf="@+id/textboxCompetition"
+        app:layout_constraintTop_toBottomOf="@+id/textboxBenefit" />
+
+    <EditText
+        android:id="@+id/textboxVar"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/textbox_width"
+        android:layout_marginTop="8dp"
+        android:background="@color/textbox_color"
+        android:ems="10"
+        android:gravity="start|top"
+        android:inputType="textMultiLine"
+        app:layout_constraintEnd_toEndOf="@+id/textboxCompetition"
+        app:layout_constraintStart_toStartOf="@+id/textboxCompetition"
+        app:layout_constraintTop_toBottomOf="@+id/tvVar"
+        tools:ignore="SpeakableTextPresentCheck" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

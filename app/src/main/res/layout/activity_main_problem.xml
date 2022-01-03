@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivityProblem" >
+
+
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tab_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:ignore="SpeakableTextPresentCheck" />
+
+    <TextView
+        android:id="@+id/tvTabIntro"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tab_layout"
+        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="32dp"
+        android:layout_marginTop="16dp"
+        android:gravity="center"
+        android:text="ipsum"
+        android:textAppearance="@style/TextAppearance.AppCompat.Display1" />
+
+    <TextView
+        android:id="@+id/textView10"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tab_layout"
+        android:layout_marginLeft="32dp"
+        android:layout_marginTop="92dp"
+        android:text="Kort titel på problemet" />
+
+    <EditText
+        android:id="@+id/textBoxTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_below="@id/textView10"
+        android:layout_marginLeft="32dp"
+        android:layout_marginTop="8dp"
+        android:background="@color/textbox_color"
+        android:ems="10"
+        android:inputType="textPersonName"
+        tools:ignore="SpeakableTextPresentCheck" />
+
+    <Button
+        android:id="@+id/buttonNew"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/textBoxTitle"
+        android:layout_marginLeft="32dp"
+        android:layout_toRightOf="@id/textBoxTitle"
+        android:visibility="invisible"
+        android:text="Nytt" />
+
+    <Button
+        android:id="@+id/buttonSearch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/buttonNew"
+        android:layout_marginLeft="32dp"
+        android:layout_toRightOf="@id/buttonNew"
+        android:visibility="invisible"
+        android:text="Sök" />
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/view_pager2"
+        android:layout_width="match_parent"
+        android:layout_height="710dp"
+        android:layout_below="@id/tab_layout"
+        android:layout_marginTop="157dp" />
+
+    <Button
+        android:id="@+id/buttonUpdate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/view_pager2"
+        android:layout_toLeftOf="@id/buttonMyList"
+        android:onClick="onClickButtonUpdate"
+        android:text="Spara" />
+
+    <Button
+        android:id="@+id/buttonMyList"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/view_pager2"
+        android:layout_alignBottom="@id/buttonUpdate"
+        android:layout_marginLeft="32dp"
+        android:layout_marginRight="32dp"
+        android:layout_alignRight="@id/view_pager2"
+        android:onClick="onClickButtonMyList"
+        android:text="Min Lista" />
+
+
+</RelativeLayout>
