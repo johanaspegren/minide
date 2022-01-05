@@ -19,13 +19,13 @@ public class FragmentAdapterProblem extends FragmentStateAdapter {
         switch (position) {
             case 1: return new FragmentImageProblem();
             case 2: return new FragmentDetailsProblem();
-            //case 3: return new FragmentMyList();
+            case 3: return new FragmentConnections();
         }
         return new FragmentDescriptionProblem();
     }
 
     @Override
     public int getItemCount() {
-        return 3;
+        return 4;
     }
 }

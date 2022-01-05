@@ -1,20 +1,16 @@
 package com.aspegrenide.minide.data;
 
-import java.util.ArrayList;
+public class Problem extends Aspect{
 
-public class Problem {
-
-    private String title;
-    private String uid;
     private String what;
     private String who;
     private String when;
     private String where;
     private String contact;
     private boolean open;
-    private ArrayList<String> linkedIdeas;
 
     public Problem() {
+
     }
 
     @Override
@@ -96,11 +92,4 @@ public class Problem {
         this.open = open;
     }
 
-    public ArrayList<String> getLinkedIdeas() {
-        return linkedIdeas;
-    }
-
-    public void setLinkedIdeas(ArrayList<String> linkedIdeas) {
-        this.linkedIdeas = linkedIdeas;
-    }
 }

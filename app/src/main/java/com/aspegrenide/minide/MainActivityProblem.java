@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -68,7 +69,6 @@ public class MainActivityProblem extends AppCompatActivity {
 
         etTitle = findViewById(R.id.textBoxTitle);
 
-
         if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
             if(extras == null) {
@@ -101,8 +101,7 @@ public class MainActivityProblem extends AppCompatActivity {
         tabLayout.addTab(tabLayout.newTab().setText("Beskrivning"));
         tabLayout.addTab(tabLayout.newTab().setText("Bild"));
         tabLayout.addTab(tabLayout.newTab().setText("Detaljer"));
-        //tabLayout.addTab(tabLayout.newTab().setText("Min lista"));
-
+        tabLayout.addTab(tabLayout.newTab().setText("Kopplingar"));
 
 
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -122,7 +121,7 @@ public class MainActivityProblem extends AppCompatActivity {
                     tabIntro.setText("Lite om hur problemet hänger ihop");
                 }
                 if(tab.getPosition() == 3) {
-                    tabIntro.setText("Min lista");
+                    tabIntro.setText("Kopplingar");
                 }
             }
 
@@ -153,7 +152,6 @@ public class MainActivityProblem extends AppCompatActivity {
         });
     }
 
-
     private void fillInTheBoxesDetails() {
         if (currentProblem == null) {
             return;
@@ -175,7 +173,6 @@ public class MainActivityProblem extends AppCompatActivity {
         ideasTitles = new ArrayList<>();
         ideasLinkedTitles = new ArrayList<>();
 
-
         recViewIdeas = findViewById(R.id.recViewAllIdeas);
         recViewLinkedIdeas = findViewById(R.id.recViewLinkedIdeas);
         recViewLayoutManagerIdeas = new LinearLayoutManager(this);
@@ -195,9 +192,9 @@ public class MainActivityProblem extends AppCompatActivity {
             public void onClick(View view, int position) {
                 String title = ideasTitles.get(position);
                 Log.d(LOG_TAG, "click from main activity with idea: " + title);
-                // move item from all to linked
-                updateLinkedLists(position);
-
+                // move item from all to linked, we "select" os select is true
+                //view.setBackgroundColor(Color.parseColor("#bdbdbd"));
+                updateLinkedLists(position, true);
             }
 
             @Override
@@ -205,18 +202,46 @@ public class MainActivityProblem extends AppCompatActivity {
                 Log.d(LOG_TAG, "long click from main activity");
             }
         }));
+
+        recViewLinkedIdeas.addOnItemTouchListener(new RecyclerTouchListener(getApplicationContext(), recViewLinkedIdeas, new RecyclerTouchListener.ClickListener() {
+            @Override
+            public void onClick(View view, int position) {
+                String title = ideasLinkedTitles.get(position);
+                Log.d(LOG_TAG, "click from main activity with idea: " + title);
+                // move item from linked to all, we "unselect" so select is false
+                updateLinkedLists(position, false);
+            }
+
+            @Override
+            public void onLongClick(View view, int position) {
+                Log.d(LOG_TAG, "long click from main activity");
+            }
+        }));
+
     }
 
-    private void updateLinkedLists(int position) {
+    private void updateLinkedLists(int position, boolean select) {
         // update the main lists
-        Idea temp = ideas.get(position);
-        ideas.remove(position);
-        ideasLinked.add(temp);
+        if(select) {
+            Idea temp = ideas.get(position);
+            ideas.remove(position);
+            ideasLinked.add(temp);
 
-        // also update the titles that go into the recyclerviews
-        String t = ideasTitles.get(position);
-        ideasTitles.remove(position);
-        ideasLinkedTitles.add(t);
+            // also update the titles that go into the recyclerviews
+            String t = ideasTitles.get(position);
+            ideasTitles.remove(position);
+            ideasLinkedTitles.add(t);
+        } else {
+            // unselect
+            Idea temp = ideasLinked.get(position);
+            ideasLinked.remove(position);
+            ideas.add(temp);
+
+            // also update the titles that go into the recyclerviews
+            String t = ideasLinkedTitles.get(position);
+            ideasLinkedTitles.remove(position);
+            ideasTitles.add(t);
+        }
 
         recViewAdapterIdeas.notifyDataSetChanged();
         recViewAdapterLinkedIdeas.notifyDataSetChanged();
@@ -230,19 +255,30 @@ public class MainActivityProblem extends AppCompatActivity {
             Iterable<DataSnapshot> stuff = dataSnapshot.getChildren();
             ideas.clear();
             ideasTitles.clear();
+            // at this point we may have ideas that are simultaneously in "all" and "linked"
+            // they need to be removed
+            ideasLinked.clear();
+            ideasLinkedTitles.clear();
+
             for (DataSnapshot s : stuff) {
                 Idea i = s.getValue(Idea.class);
                 Log.d(LOG_TAG, "read i as " + i.toString());
                 // now check which ones are already selected
-                if(currentProblem.getLinkedIdeas().contains(i.getUid())) {
-                    // already listed
-                    ideasLinked.add(i);
-                    ideasLinkedTitles.add(i.getTitle());
-                } else {
+                boolean linked = false;
+                if (currentProblem.getLinkedIdeas() != null) { // there is something linked
+                    if(currentProblem.getLinkedIdeas().contains(i.getUid())) { // this idea is linked
+                        ideasLinked.add(i);
+                        ideasLinkedTitles.add(i.getTitle());
+                        linked = true;
+                    }
+                }
+                if(!linked) {
                     ideas.add(i);
                     ideasTitles.add(i.getTitle());
                 }
             }
+
+
             recViewAdapterIdeas.notifyDataSetChanged();
             recViewAdapterLinkedIdeas.notifyDataSetChanged();
         }
@@ -317,6 +353,9 @@ public class MainActivityProblem extends AppCompatActivity {
         EditText etWhere = findViewById(R.id.textboxVar);
         EditText etWho = findViewById(R.id.textboxCompetition);
 
+        problemCloudEndPoint.child(problemUid).child("type").
+                setValue("problem");
+
         if (etWhat != null) {
             problemCloudEndPoint.child(problemUid).child("what").
                     setValue(etWhat.getText().toString());
@@ -351,6 +390,7 @@ public class MainActivityProblem extends AppCompatActivity {
         if(rc != null) {
             ArrayList<String> linkedUids = new ArrayList<>();
             for (Idea i : ideasLinked) {
+                Log.d(LOG_TAG, "write linked idea " + i.getTitle());
                 linkedUids.add(i.getUid());
             }
             problemCloudEndPoint.child(problemUid).child("linkedIdeas").
@@ -392,6 +432,7 @@ public class MainActivityProblem extends AppCompatActivity {
 
         problemUid = problemCloudEndPoint.push().getKey();
         currentProblem = new Problem();
+        currentProblem.setType("problem");
         currentProblem.setUid(problemUid);
         currentProblem.setTitle(proposedTitle);
 

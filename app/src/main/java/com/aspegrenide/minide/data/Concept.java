@@ -1,15 +1,15 @@
 package com.aspegrenide.minide.data;
 
-public class Challenge extends Aspect{
+public class Concept extends Aspect{
 
 
-    public Challenge() {
+    public Concept() {
 
     }
 
     @Override
     public String toString() {
-        return "Challenge{" +
+        return "Concept{" +
                 "title='" + title + '\'' +
                 ", uid='" + uid + '\'' +
                 ", type='" + type + '\'' +

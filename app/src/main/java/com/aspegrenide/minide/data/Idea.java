@@ -1,27 +1,31 @@
 package com.aspegrenide.minide.data;
 
-public class Idea {
+public class Idea extends Aspect {
 
-    private String title;
     private String approach;
     private String benefit;
     private String contact;
     private String competition;
-    private String uid;
     private boolean open;
 
     public Idea() {
+
     }
 
     @Override
     public String toString() {
         return "Idea{" +
                 "title='" + title + '\'' +
+                ", uid='" + uid + '\'' +
+                ", type='" + type + '\'' +
+                ", linkedChallenges=" + linkedChallenges +
+                ", linkedProblems=" + linkedProblems +
+                ", linkedIdeas=" + linkedIdeas +
+                ", linkedConcepts=" + linkedConcepts +
                 ", approach='" + approach + '\'' +
                 ", benefit='" + benefit + '\'' +
                 ", contact='" + contact + '\'' +
                 ", competition='" + competition + '\'' +
-                ", uid='" + uid + '\'' +
                 ", open=" + open +
                 '}';
     }
@@ -32,6 +36,14 @@ public class Idea {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getUid() {
+        return uid;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
     }
 
     public String getApproach() {
@@ -66,14 +78,6 @@ public class Idea {
         this.competition = competition;
     }
 
-    public String getUid() {
-        return uid;
-    }
-
-    public void setUid(String uid) {
-        this.uid = uid;
-    }
-
     public boolean isOpen() {
         return open;
     }
@@ -81,4 +85,6 @@ public class Idea {
     public void setOpen(boolean open) {
         this.open = open;
     }
+
+
 }

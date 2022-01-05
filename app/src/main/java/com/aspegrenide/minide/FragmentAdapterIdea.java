@@ -17,13 +17,13 @@ public class FragmentAdapterIdea extends FragmentStateAdapter {
         switch (position) {
             case 1: return new FragmentImageIdea();
             case 2: return new FragmentDetailsIdea();
-            //case 3: return new FragmentMyList();
+            case 3: return new FragmentConnections();
         }
         return new FragmentDescriptionIdea();
     }
 
     @Override
     public int getItemCount() {
-        return 3;
+        return 4;
     }
 }

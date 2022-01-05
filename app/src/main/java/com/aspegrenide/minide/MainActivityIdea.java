@@ -1,19 +1,23 @@
 package com.aspegrenide.minide;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.aspegrenide.minide.data.Concept;
 import com.aspegrenide.minide.data.Idea;
 import com.aspegrenide.minide.data.Problem;
 import com.google.android.material.tabs.TabLayout;
@@ -42,6 +46,29 @@ public class MainActivityIdea extends AppCompatActivity {
     private String ideaUid;
 
     private String LOG_TAG = "min_ide";
+
+    // show linked ideas
+    RecyclerView recViewProblems;
+    RecyclerView recViewLinkedProblems;
+    RecyclerView.LayoutManager recViewLayoutManagerProblems;
+    RecyclerView.LayoutManager recViewLayoutManagerLinkedProblems;
+    RecyclerView.Adapter recViewAdapterProblems;
+    RecyclerView.Adapter recViewAdapterLinkedProblems;
+
+    // allow linked concepts
+    RecyclerView recViewConcepts;
+    RecyclerView.LayoutManager recViewLayoutManagerConcepts;
+    RecyclerView.Adapter recViewAdapterConcepts;
+
+    ArrayList<Problem> problems;
+    ArrayList<Problem> problemsLinked;
+    ArrayList<String> problemsTitles;
+    ArrayList<String> problemsLinkedTitles;
+
+    ArrayList<Concept> concepts;
+    ArrayList<Concept> conceptsLinked;
+    ArrayList<String> conceptsTitles;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,7 +111,7 @@ public class MainActivityIdea extends AppCompatActivity {
         tabLayout.addTab(tabLayout.newTab().setText("Beskrivning"));
         tabLayout.addTab(tabLayout.newTab().setText("Bild"));
         tabLayout.addTab(tabLayout.newTab().setText("Detaljer"));
-        //tabLayout.addTab(tabLayout.newTab().setText("Min lista"));
+        tabLayout.addTab(tabLayout.newTab().setText("Kopplingar"));
 
 
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -104,7 +131,7 @@ public class MainActivityIdea extends AppCompatActivity {
                     tabIntro.setText("Hur idén hänger ihop med annat");
                 }
                 if(tab.getPosition() == 3) {
-                    tabIntro.setText("Min lista");
+                    tabIntro.setText("Kopplingar");
                 }
             }
 
@@ -131,7 +158,6 @@ public class MainActivityIdea extends AppCompatActivity {
                 // now everything has loaded and we can access the views of the fragment
                 fillInTheBoxesDescription();
                 fillInTheBoxesDetails();
-
             }
         });
     }
@@ -148,8 +174,219 @@ public class MainActivityIdea extends AppCompatActivity {
         Switch openItem = findViewById(R.id.switchOpen);
         openItem.setChecked(currentIdea.isOpen());
 
+        fbDatabaseReference =  FirebaseDatabase.getInstance("https://minide-1d8d6-default-rtdb.europe-west1.firebasedatabase.app").getReference();
+        DatabaseReference problemCloudEndPoint = fbDatabaseReference.child("problems");
+        problemCloudEndPoint.addValueEventListener(problemListener);
+
+        DatabaseReference conceptCloudEndPoint = fbDatabaseReference.child("concepts");
+        conceptCloudEndPoint.addValueEventListener(conceptListener);
+
+        problems = new ArrayList<>();
+        problemsLinked = new ArrayList<>();
+        problemsTitles = new ArrayList<>();
+        problemsLinkedTitles = new ArrayList<>();
+
+        concepts = new ArrayList<>();
+        conceptsLinked = new ArrayList<>();
+        conceptsTitles = new ArrayList<>();
+
+        recViewProblems = findViewById(R.id.recViewAllProblems);
+        recViewLinkedProblems = findViewById(R.id.recViewLinkedProblems);
+        recViewLayoutManagerProblems = new LinearLayoutManager(this);
+        recViewLayoutManagerLinkedProblems = new LinearLayoutManager(this);
+
+        recViewConcepts = findViewById(R.id.recViewAllConcepts);
+        recViewLayoutManagerConcepts = new LinearLayoutManager(this);
+
+        recViewAdapterProblems = new MainAdapter(problemsTitles);
+        recViewAdapterLinkedProblems = new MainAdapter(problemsLinkedTitles);
+
+        recViewAdapterConcepts = new MainAdapter(conceptsTitles);
+
+        recViewProblems.setLayoutManager(recViewLayoutManagerProblems);
+        recViewProblems.setAdapter(recViewAdapterProblems);
+
+        recViewConcepts.setLayoutManager(recViewLayoutManagerConcepts);
+        recViewConcepts.setAdapter(recViewAdapterConcepts);
+
+        recViewLinkedProblems.setLayoutManager(recViewLayoutManagerLinkedProblems);
+        recViewLinkedProblems.setAdapter(recViewAdapterLinkedProblems);
+
+        recViewProblems.addOnItemTouchListener(new RecyclerTouchListener(getApplicationContext(), recViewProblems, new RecyclerTouchListener.ClickListener() {
+            @Override
+            public void onClick(View view, int position) {
+                String title = problemsTitles.get(position);
+                Log.d(LOG_TAG, "click from main activity with problem: " + title);
+                // move item from all to linked, we "select" os select is true
+                //view.setBackgroundColor(Color.parseColor("#bdbdbd"));
+                updateLinkedLists(position, true);
+            }
+
+            @Override
+            public void onLongClick(View view, int position) {
+                Log.d(LOG_TAG, "long click from main activity");
+            }
+        }));
+
+        recViewConcepts.addOnItemTouchListener(new RecyclerTouchListener(getApplicationContext(), recViewConcepts, new RecyclerTouchListener.ClickListener() {
+            @Override
+            public void onClick(View view, int position) {
+                String title = conceptsTitles.get(position);
+                Log.d(LOG_TAG, "click from main activity with concept: " + title);
+                // move item from all to linked, we "select" os select is true
+                updateLinkedConceptsLists(position, true, view);
+            }
+
+            @Override
+            public void onLongClick(View view, int position) {
+                Log.d(LOG_TAG, "long click from main activity");
+            }
+        }));
+
+        /*
+
+        recViewLinkedIdeas.addOnItemTouchListener(new RecyclerTouchListener(getApplicationContext(), recViewLinkedIdeas, new RecyclerTouchListener.ClickListener() {
+            @Override
+            public void onClick(View view, int position) {
+                String title = ideasLinkedTitles.get(position);
+                Log.d(LOG_TAG, "click from main activity with idea: " + title);
+                // move item from linked to all, we "unselect" so select is false
+                updateLinkedLists(position, false);
+            }
+
+            @Override
+            public void onLongClick(View view, int position) {
+                Log.d(LOG_TAG, "long click from main activity");
+            }
+        }));
+         */
+
     }
 
+    private void updateLinkedLists(int position, boolean select) {
+        // update the main lists
+        if(select) {
+            Problem temp = problems.get(position);
+            problems.remove(position);
+            problemsLinked.add(temp);
+
+            // also update the titles that go into the recyclerviews
+            String t = problemsTitles.get(position);
+            problemsTitles.remove(position);
+            problemsLinkedTitles.add(t);
+        } else {
+            // unselect
+            Problem temp = problemsLinked.get(position);
+            problemsLinked.remove(position);
+            problems.add(temp);
+
+            // also update the titles that go into the recyclerviews
+            String t = problemsLinkedTitles.get(position);
+            problemsLinkedTitles.remove(position);
+            problemsTitles.add(t);
+        }
+
+        recViewAdapterProblems.notifyDataSetChanged();
+        recViewAdapterLinkedProblems.notifyDataSetChanged();
+
+    }
+
+    private void updateLinkedConceptsLists(int position, boolean select, View view) {
+        // update the main lists
+        Concept temp = concepts.get(position);
+        if(conceptsLinked.contains(temp)) {
+            conceptsLinked.remove(temp);
+            view.setBackgroundColor(Color.parseColor("#ffffff"));
+        }else {
+            conceptsLinked.add(concepts.get(position));
+            view.setBackgroundColor(Color.parseColor("#bdbdbd"));
+        }
+
+        recViewAdapterConcepts.notifyDataSetChanged();
+
+    }
+
+    ValueEventListener problemListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+            // Get Post object and use the values to update the UI
+            Iterable<DataSnapshot> stuff = dataSnapshot.getChildren();
+            problems.clear();
+            problemsTitles.clear();
+            // at this point we may have ideas that are simultaneously in "all" and "linked"
+            // they need to be removed
+            problemsLinked.clear();
+            problemsLinkedTitles.clear();
+
+            for (DataSnapshot s : stuff) {
+                Problem i = s.getValue(Problem.class);
+                Log.d(LOG_TAG, "read i as " + i.toString());
+                // now check which ones are already selected
+                boolean linked = false;
+                if (currentIdea.getLinkedProblems() != null) { // there is something linked
+                    if(currentIdea.getLinkedProblems().contains(i.getUid())) { // this idea is linked
+                        problemsLinked.add(i);
+                        problemsLinkedTitles.add(i.getTitle());
+                        linked = true;
+                    }
+                }
+                if(!linked) {
+                    problems.add(i);
+                    problemsTitles.add(i.getTitle());
+                }
+            }
+
+
+            recViewAdapterProblems.notifyDataSetChanged();
+            recViewAdapterLinkedProblems.notifyDataSetChanged();
+        }
+
+        @Override
+        public void onCancelled(@NonNull DatabaseError error) {
+
+        }
+    };
+
+    ValueEventListener conceptListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+            // Get Post object and use the values to update the UI
+            Iterable<DataSnapshot> stuff = dataSnapshot.getChildren();
+            concepts.clear();
+            conceptsTitles.clear();
+            // at this point we may have ideas that are simultaneously in "all" and "linked"
+            // they need to be removed
+            conceptsLinked.clear();
+            //conceptsLinkedTitles.clear();
+
+            for (DataSnapshot s : stuff) {
+                Concept c = s.getValue(Concept.class);
+                Log.d(LOG_TAG, "read i as (concept) " + c.toString());
+                // now check which ones are already selected
+                boolean linked = false;
+                if (currentIdea.getLinkedConcepts() != null) { // there is something linked
+                    if(currentIdea.getLinkedConcepts().contains(c.getUid())) { // this idea is linked
+                        conceptsLinked.add(c);
+                        //problemsLinkedTitles.add(i.getTitle());
+                        linked = true;
+                    }
+                }
+                if(!linked) {
+                    concepts.add(c);
+                    conceptsTitles.add(c.getTitle());
+                }
+            }
+
+
+            recViewAdapterConcepts.notifyDataSetChanged();
+            //recViewAdapterLinkedProblems.notifyDataSetChanged();
+        }
+
+        @Override
+        public void onCancelled(@NonNull DatabaseError error) {
+
+        }
+    };
 
     private void fillInTheBoxesDescription() {
         if (currentIdea == null) {
@@ -214,6 +451,9 @@ public class MainActivityIdea extends AppCompatActivity {
         EditText etVar = findViewById(R.id.textboxVar);
         EditText etCompetition = findViewById(R.id.textboxCompetition);
 
+        ideaCloudEndPoint.child(ideaUid).child("type").
+                setValue("idea");
+
         if (etApproach != null) {
             ideaCloudEndPoint.child(ideaUid).child("approach").
                     setValue(etApproach.getText().toString());
@@ -237,6 +477,30 @@ public class MainActivityIdea extends AppCompatActivity {
         if(swtOpen != null) {
             ideaCloudEndPoint.child(ideaUid).child("open").
                     setValue(swtOpen.isChecked());
+        }
+
+        //linked problems
+        RecyclerView rc = findViewById(R.id.recViewLinkedProblems);
+        if(rc != null) {
+            ArrayList<String> linkedUids = new ArrayList<>();
+            for (Problem i : problemsLinked) {
+                Log.d(LOG_TAG, "write linked problem " + i.getTitle());
+                linkedUids.add(i.getUid());
+            }
+            ideaCloudEndPoint.child(ideaUid).child("linkedProblems").
+                    setValue(linkedUids);
+        }
+
+        //linked concepts
+        RecyclerView rcc = findViewById(R.id.recViewAllConcepts);
+        if(rcc != null) {
+            ArrayList<String> linkedUids = new ArrayList<>();
+            for (Concept i : conceptsLinked) {
+                Log.d(LOG_TAG, "write linked concept " + i.getTitle());
+                linkedUids.add(i.getUid());
+            }
+            ideaCloudEndPoint.child(ideaUid).child("linkedConcepts").
+                    setValue(linkedUids);
         }
 
         Toast.makeText(this, "Updated", Toast.LENGTH_SHORT).show();
@@ -275,6 +539,7 @@ public class MainActivityIdea extends AppCompatActivity {
         ideaUid = ideaCloudEndPoint.push().getKey();
         currentIdea = new Idea();
         currentIdea.setUid(ideaUid);
+        currentIdea.setType(("idea"));
         currentIdea.setTitle(proposedTitle);
         ideaCloudEndPoint.child(ideaUid).setValue(currentIdea);
 

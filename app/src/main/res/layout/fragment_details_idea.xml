@@ -55,6 +55,62 @@
         app:layout_constraintTop_toBottomOf="@+id/textView4" />
 
     <TextView
+        android:id="@+id/textView8"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:text="Koppla problem"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        app:layout_constraintStart_toStartOf="@+id/textView5"
+        app:layout_constraintTop_toBottomOf="@+id/textBoxOmvärld" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recViewAllProblems"
+        android:layout_width="169dp"
+        android:layout_height="190dp"
+        android:layout_marginStart="24dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView8">
+
+    </androidx.recyclerview.widget.RecyclerView>
+
+    <TextView
+        android:id="@+id/textViewKopplaKoncept"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:text="Koppla koncept"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        app:layout_constraintStart_toEndOf="@+id/recViewAllProblems"
+        app:layout_constraintTop_toTopOf="@+id/textView8" />
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recViewAllConcepts"
+        android:layout_width="169dp"
+        android:layout_height="190dp"
+        app:layout_constraintStart_toStartOf="@+id/textViewKopplaKoncept"
+        app:layout_constraintTop_toBottomOf="@+id/textViewKopplaKoncept">
+
+    </androidx.recyclerview.widget.RecyclerView>
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:text="Kopplade problem"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        app:layout_constraintEnd_toEndOf="@+id/textBoxOmvärld"
+        app:layout_constraintTop_toBottomOf="@+id/textBoxOmvärld" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recViewLinkedProblems"
+        android:layout_width="169dp"
+        android:layout_height="190dp"
+        app:layout_constraintEnd_toEndOf="@+id/textView"
+        app:layout_constraintTop_toBottomOf="@+id/textView8">
+
+    </androidx.recyclerview.widget.RecyclerView>
+
+    <TextView
         android:id="@+id/textView6"
         android:layout_width="wrap_content"
         android:layout_height="40dp"
@@ -75,24 +131,13 @@
         app:layout_constraintStart_toStartOf="@+id/textView5"
         app:layout_constraintTop_toBottomOf="@+id/switchOpen" />
 
-    <TextView
-        android:id="@+id/textView8"
-        android:layout_width="wrap_content"
-        android:layout_height="40dp"
-        android:layout_marginTop="32dp"
-        android:text="Kopplade problem"
-        android:textAppearance="@style/TextAppearance.AppCompat.Large"
-        app:layout_constraintStart_toStartOf="@+id/textView5"
-        app:layout_constraintTop_toBottomOf="@+id/textBoxKontakt" />
-
     <Switch
         android:id="@+id/switchOpen"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="32dp"
         android:minWidth="48dp"
         android:minHeight="48dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textBoxOmvärld" />
+        app:layout_constraintTop_toBottomOf="@+id/recViewAllProblems" />
 </androidx.constraintlayout.widget.ConstraintLayout>
